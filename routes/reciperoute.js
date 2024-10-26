@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Public routes
 router.get('/', recipeController.getAllRecipes);
-router.get('/search', recipeController.searchRecipes);
+router.get('/search', recipeController.advancedSearchRecipes);
 router.get('/:id', recipeController.getRecipeById);
 
 

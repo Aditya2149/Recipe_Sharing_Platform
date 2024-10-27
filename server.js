@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authroute');
 const recipeRoutes = require('./routes/reciperoute')
+const reviewRoutes = require('./routes/reviewroute');
 require('dotenv').config();
 
 // Initialize Express app
@@ -16,6 +17,9 @@ app.use(express.json());
 //auth route
 app.use('/auth', authRoutes);
 app.use('/recipes',recipeRoutes);
+
+// Review routes
+app.use('/reviews', reviewRoutes);
 
 
 // Set up the server

@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authroute');
 const recipeRoutes = require('./routes/reciperoute')
 const reviewRoutes = require('./routes/reviewroute');
+const chefAvailabilityRoutes = require('./routes/chefavailroute');
 require('dotenv').config();
 
 // Initialize Express app
@@ -21,6 +22,8 @@ app.use('/recipes',recipeRoutes);
 // Review routes
 app.use('/reviews', reviewRoutes);
 
+// Chef availability routes
+app.use('/availability', chefAvailabilityRoutes);
 
 // Set up the server
 const PORT = 3000;

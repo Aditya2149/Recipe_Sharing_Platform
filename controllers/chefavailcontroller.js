@@ -53,12 +53,6 @@ exports.getAvailability = async (req, res) => {
 
         // Convert stored UTC times to client's timezone
         const availability = result.rows.map(entry => {
-            // Log raw database values
-            console.log('Raw DB values:', {
-                date: entry.available_date,
-                startTime: entry.start_time,
-                endTime: entry.end_time
-            });
 
             // Create UTC date-time by combining date and time strings
             const dateStr = moment(entry.available_date).format('YYYY-MM-DD');
@@ -76,14 +70,6 @@ exports.getAvailability = async (req, res) => {
             // Convert to client timezone
             const localStart = utcStart.tz(clientTimezone);
             const localEnd = utcEnd.tz(clientTimezone);
-
-            // Debug logging
-            console.log('Conversion steps:', {
-                utcStartStr,
-                utcEndStr,
-                localStartFull: localStart.format(),
-                localEndFull: localEnd.format()
-            });
 
             // Format the output
             const localDate = localStart.format('YYYY-MM-DD');

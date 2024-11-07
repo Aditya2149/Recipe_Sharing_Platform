@@ -4,7 +4,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 // Route to create a new booking
-router.post('/create', authMiddleware, bookingController.createBooking);
+router.post('/initiate', authMiddleware, bookingController.initiateBooking);
 
 router.post('/cancel/:booking_id', authMiddleware, bookingController.cancelBooking);
 

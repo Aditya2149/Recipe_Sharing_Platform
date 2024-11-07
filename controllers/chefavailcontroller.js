@@ -3,7 +3,7 @@ const moment = require('moment-timezone');
 
 // Add chef availability
 exports.addAvailability = async (req, res) => {
-    const { available_date, start_time, end_time } = req.body;
+    const { available_date, start_time, end_time, online_rate, offline_rate } = req.body;
     const chef_id = req.user.id;  // Authenticated chef's ID
     const timezone = req.header('timezone') || 'UTC';  // Chef's timezone from header
 
@@ -18,8 +18,8 @@ exports.addAvailability = async (req, res) => {
 
         // Insert into the database
         const result = await pool.query(
-            'INSERT INTO chef_availability (chef_id, available_date, start_time, end_time, timezone) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [chef_id, utcAvailableDate, utcStartTime, utcEndTime, 'UTC']
+            'INSERT INTO chef_availability (chef_id, available_date, start_time, end_time, timezone, online_rate, offline_rate) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [chef_id, utcAvailableDate, utcStartTime, utcEndTime, 'UTC', online_rate, offline_rate]
         );
 
         // Format the response properly
@@ -30,6 +30,8 @@ exports.addAvailability = async (req, res) => {
             start_time: utcStartTime,
             end_time: utcEndTime,
             timezone: 'UTC',
+            onlineRate: online_rate,
+            offlineRate: offline_rate,
             created_at: result.rows[0].created_at
         };
 

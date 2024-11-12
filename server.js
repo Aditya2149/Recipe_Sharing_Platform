@@ -7,6 +7,7 @@ const reviewRoutes = require('./routes/reviewroute');
 const chefAvailabilityRoutes = require('./routes/chefavailroute');
 const bookingRoutes = require('./routes/bookingroute');
 const paymentRoutes = require('./routes/paymentroute');
+const chefProfileRoutes = require('./routes/chefprofileroute');
 require('dotenv').config();
 
 // Initialize Express app
@@ -32,6 +33,9 @@ app.use('/bookings', bookingRoutes);
 
 // Payment routes
 app.use('/payments', paymentRoutes);
+
+// chef profile routes
+app.use('/chef-profile', chefProfileRoutes);
 
 // Set up the server
 const PORT = 3000;

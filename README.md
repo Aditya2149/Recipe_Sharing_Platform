@@ -148,4 +148,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## Contact
 Your Name - aroy86606@gmail.com
 
-Project Link: [https://github.com/yourusername/recipe-platform](https://github.com/yourusername/recipe-platform)
+Project Link: [https://github.com/yourusername/recipe-platform](https://github.com/aditya2149/Recipe_Sharing_Platform)

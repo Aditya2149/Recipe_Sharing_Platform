@@ -5,15 +5,6 @@ const { Server } = require('socket.io');
 const session = require('express-session');
 require('dotenv').config();
 
-const cors = require("cors");
-app.use(
-    cors({
-        origin: "https://chefnest-frontend.onrender.com", // Allow only your frontend
-        methods: "GET,POST,PUT,DELETE",
-        allowedHeaders: "Content-Type,Authorization",
-    })
-);
-
 // Import routes
 const authRoutes = require('./routes/authroute');
 const recipeRoutes = require('./routes/reciperoute');
@@ -31,6 +22,14 @@ const shoppingListRoutes = require('./routes/shoppinglistroute');
 const app = express();
 const server = http.createServer(app);
 
+const cors = require("cors");
+app.use(
+    cors({
+        origin: "https://chefnest-frontend.onrender.com", // Allow only your frontend
+        methods: "GET,POST,PUT,DELETE",
+        allowedHeaders: "Content-Type,Authorization",
+    })
+);
 // Initialize Socket.IO
 const io = new Server(server);
 

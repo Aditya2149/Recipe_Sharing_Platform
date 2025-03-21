@@ -1,5 +1,5 @@
 const express = require('express');
-const chefProfileController = require('../controllers/chefprofilecontroller');
+const {chefProfileController, getAllChefs, getTopRatedChefs} = require('../controllers/chefprofilecontroller');
 const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
 

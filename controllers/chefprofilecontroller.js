@@ -60,6 +60,43 @@ exports.updateChefProfile = async (req, res) => {
     }
 };
 
+// Get all chefs' profiles
+exports.getAllChefs = async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT cp.id, cp.user_id, u.full_name, cp.profile_picture, cp.experience, cp.expertise, cp.location, cp.created_at
+            FROM chef_profiles cp
+            JOIN users u ON cp.user_id = u.id
+            ORDER BY cp.created_at DESC
+        `);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching all chefs:", error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+};
+
+// Get top-rated chefs (Assuming ratings are stored in a `reviews` table)
+exports.getTopRatedChefs = async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT cp.id, cp.user_id, u.full_name, cp.profile_picture, cp.experience, cp.expertise, cp.location,
+                   AVG(r.rating) AS average_rating
+            FROM chef_profiles cp
+            JOIN users u ON cp.user_id = u.id
+            LEFT JOIN reviews r ON cp.user_id = r.chef_id
+            GROUP BY cp.id, u.full_name, cp.profile_picture, cp.experience, cp.expertise, cp.location
+            HAVING AVG(r.rating) IS NOT NULL
+            ORDER BY average_rating DESC
+            LIMIT 5
+        `);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching top-rated chefs:", error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+};
+
 // Add a review for a chef
 exports.addReview = async (req, res) => {
     const { chefId, rating, comment } = req.body;

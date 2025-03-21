@@ -10,7 +10,7 @@ exports.getChefProfile = async (req, res) => {
             SELECT u.name, u.email, cp.profile_picture, cp.experience, cp.expertise, cp.location
             FROM chef_profiles cp
             JOIN users u ON u.id = cp.user_id
-            WHERE cp.user_id = $1
+            WHERE cp.id = $1
         `;
         const profileResult = await pool.query(profileQuery, [chefId]);
 

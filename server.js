@@ -25,7 +25,7 @@ const server = http.createServer(app);
 const cors = require("cors");
 app.use(
     cors({
-        origin: "https://chefnest-frontend.onrender.com", // Allow only your frontend
+        origin: "*", // Allow only your frontend
         methods: "GET,POST,PUT,DELETE",
         allowedHeaders: "Content-Type,Authorization",
     })

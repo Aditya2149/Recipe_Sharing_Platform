@@ -7,8 +7,8 @@ const router = express.Router();
 // Public routes
 router.get('/', recipeController.getAllRecipes);
 router.get('/search', recipeController.advancedSearchRecipes);
-router.get('/:id', recipeController.getRecipeById);
 router.get("/top-rated", recipeController.getTopRatedRecipes);
+router.get('/:id', recipeController.getRecipeById);
 
 // Routes for Chefs (authenticated users with 'chef' role)
 router.post('/', authMiddleware, roleMiddleware(['chef', 'admin']), recipeController.createRecipe);

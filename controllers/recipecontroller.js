@@ -41,11 +41,29 @@ exports.createRecipe = async (req, res) => {
   }
 };
 
-// Get All Recipes
+// Get All Recipes with Pagination
 exports.getAllRecipes = async (req, res) => {
+  const { page = 1, limit = 15 } = req.query; // Default to page 1, limit 15
+  const offset = (page - 1) * limit;
+
   try {
-    const result = await pool.query('SELECT * FROM recipes');
-    res.status(200).json(result.rows);
+    // Fetch recipes with pagination
+    const result = await pool.query(
+      'SELECT * FROM recipes ORDER BY id DESC LIMIT $1 OFFSET $2',
+      [limit, offset]
+    );
+
+    // Count total recipes for pagination
+    const countResult = await pool.query('SELECT COUNT(*) FROM recipes');
+    const totalRecipes = parseInt(countResult.rows[0].count, 10);
+    const totalPages = Math.ceil(totalRecipes / limit);
+
+    res.status(200).json({
+      recipes: result.rows,
+      totalRecipes,
+      totalPages,
+      currentPage: parseInt(page, 10),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });

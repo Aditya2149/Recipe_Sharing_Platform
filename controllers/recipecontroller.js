@@ -146,6 +146,27 @@ exports.deleteRecipe = async (req, res) => {
     }
 };
 
+// Get Top 5 Rated Recipes
+exports.getTopRatedRecipes = async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT r.id, r.title, r.description, r.image_url, r.chef_id, 
+                   r.category_id, r.difficulty, r.time, 
+                   COALESCE(AVG(rt.rating), 0) AS avg_rating
+            FROM recipes r
+            LEFT JOIN ratings rt ON r.id = rt.recipe_id
+            GROUP BY r.id
+            ORDER BY avg_rating DESC
+            LIMIT 5;
+        `);
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching top-rated recipes:", error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+};
+
 //advancedSearchRecipes function
 exports.advancedSearchRecipes = async (req, res) => {
     const { query, category_id, difficulty, max_time, ingredients } = req.query;

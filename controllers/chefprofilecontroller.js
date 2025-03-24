@@ -60,13 +60,17 @@ exports.updateChefProfile = async (req, res) => {
     }
 };
 
-// Get all chefs' profiles
+// Get all chefs' profiles with average rating
 exports.getAllChefs = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT cp.id, cp.user_id, u.name AS full_name, cp.profile_picture, cp.experience, cp.expertise, cp.location, cp.created_at
+            SELECT cp.id, cp.user_id, u.name AS full_name, cp.profile_picture, 
+                   cp.experience, cp.expertise, cp.location, cp.created_at,
+                   COALESCE(AVG(r.rating), 0) AS average_rating
             FROM chef_profiles cp
             JOIN users u ON cp.user_id = u.id
+            LEFT JOIN reviews r ON cp.user_id = r.chef_id
+            GROUP BY cp.id, u.name, cp.profile_picture, cp.experience, cp.expertise, cp.location, cp.created_at
             ORDER BY cp.created_at DESC
         `);
         res.status(200).json(result.rows);
@@ -75,6 +79,7 @@ exports.getAllChefs = async (req, res) => {
         res.status(500).json({ error: "Something went wrong" });
     }
 };
+
 
 
 exports.getTopRatedChefs = async (req, res) => {

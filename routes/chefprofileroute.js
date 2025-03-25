@@ -18,4 +18,7 @@ router.post('/', authMiddleware, chefProfileController.updateChefProfile);
 // Add a review for a chef (only accessible to logged-in users)
 router.post('/reviews', authMiddleware, chefProfileController.addReview);
 
+// Fetch all reviews for a specific chef
+router.get('/reviews/:chefId', chefProfileController.getChefReviews);
+
 module.exports = router;

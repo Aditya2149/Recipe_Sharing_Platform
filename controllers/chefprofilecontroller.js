@@ -122,3 +122,29 @@ exports.addReview = async (req, res) => {
         res.status(500).json({ error: 'Something went wrong' });
     }
 };
+
+const pool = require('../config/db');
+
+// Fetch all reviews for a specific chef
+exports.getChefReviews = async (req, res) => {
+    const { chefId } = req.params;
+
+    try {
+        const reviewsQuery = `
+            SELECT r.id, r.rating, r.comment, u.name AS reviewer_name, r.created_at
+            FROM reviews r
+            JOIN users u ON u.id = r.user_id
+            WHERE r.chef_id = $1
+            ORDER BY r.created_at DESC
+        `;
+        const reviewsResult = await pool.query(reviewsQuery, [chefId]);
+
+        res.status(200).json({
+            chefId: chefId,
+            reviews: reviewsResult.rows
+        });
+    } catch (error) {
+        console.error("Error fetching reviews:", error);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+};

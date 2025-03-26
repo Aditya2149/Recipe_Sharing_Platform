@@ -123,8 +123,6 @@ exports.addReview = async (req, res) => {
     }
 };
 
-const pool = require('../config/db');
-
 // Fetch all reviews for a specific chef
 exports.getChefReviews = async (req, res) => {
     const { chefId } = req.params;

@@ -41,14 +41,20 @@ exports.createRecipe = async (req, res) => {
   }
 };
 
-// Get All Recipes
+// Update getAllRecipes to support pagination
 exports.getAllRecipes = async (req, res) => {
+  const { page = 1, limit = 6 } = req.query;
+  const offset = (page - 1) * limit;
+
   try {
-    const result = await pool.query('SELECT * FROM recipes');
-    res.status(200).json(result.rows);
+      const result = await pool.query(
+          'SELECT * FROM recipes ORDER BY id LIMIT $1 OFFSET $2',
+          [limit, offset]
+      );
+      res.status(200).json(result.rows);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Something went wrong' });
+      console.error(error);
+      res.status(500).json({ error: 'Something went wrong' });
   }
 };
 
@@ -171,91 +177,109 @@ exports.getTopRatedRecipes = async (req, res) => {
 }
 };
 
-//advancedSearchRecipes function
+// Add this new function to get total recipe count
+exports.getRecipesCount = async (req, res) => {
+  try {
+      const result = await pool.query('SELECT COUNT(*) FROM recipes');
+      res.status(200).json({ count: parseInt(result.rows[0].count) });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+// Update advancedSearchRecipes to support pagination
 exports.advancedSearchRecipes = async (req, res) => {
-    const { query, category_id, difficulty, max_time, ingredients } = req.query;
-    
-    try {
+  const { query, category_id, difficulty, max_time, ingredients, page = 1, limit = 6 } = req.query;
+  const offset = (page - 1) * limit;
+  
+  try {
       let baseQuery = `
-        SELECT DISTINCT r.*
-        FROM recipes r
-        WHERE 1 = 1
+          SELECT DISTINCT r.*
+          FROM recipes r
+          WHERE 1 = 1
       `;
       const values = [];
       let index = 1;
-  
+
       // Filter by category if provided
       if (category_id) {
-        baseQuery += ` AND r.category_id = $${index++}`;
-        values.push(category_id);
+          baseQuery += ` AND r.category_id = $${index++}`;
+          values.push(category_id);
       }
-  
+
       // Filter by difficulty if provided - case insensitive
       if (difficulty) {
-        baseQuery += ` AND LOWER(r.difficulty) = LOWER($${index++})`;
-        values.push(difficulty);
+          baseQuery += ` AND LOWER(r.difficulty) = LOWER($${index++})`;
+          values.push(difficulty);
       }
-  
+
       // Filter by time if provided
       if (max_time) {
-        baseQuery += ` AND r.time <= $${index++}`;
-        values.push(max_time);
+          baseQuery += ` AND r.time <= $${index++}`;
+          values.push(max_time);
       }
-  
+
       // Filter by ingredients - case insensitive
       if (ingredients) {
-        // Clean and split ingredients, trimming whitespace and ignoring empty strings
-        const ingredientsList = ingredients.split(',')
-          .map(item => item.trim())
-          .filter(item => item.length > 0)
-          // Add wildcards to each ingredient for partial matching
-          .map(item => `%${item}%`);
-        
-        if (ingredientsList.length > 0) {
-          baseQuery += `
-            AND EXISTS (
-              SELECT 1 FROM ingredients i 
-              WHERE i.recipe_id = r.id 
-              AND LOWER(i.name) LIKE ANY(ARRAY[${ingredientsList.map((_, i) => `LOWER($${index + i})`).join(', ')}])
-            )
-          `;
-          values.push(...ingredientsList);
-          index += ingredientsList.length;
-        }
+          const ingredientsList = ingredients.split(',')
+              .map(item => item.trim())
+              .filter(item => item.length > 0)
+              .map(item => `%${item}%`);
+          
+          if (ingredientsList.length > 0) {
+              baseQuery += `
+                  AND EXISTS (
+                      SELECT 1 FROM ingredients i 
+                      WHERE i.recipe_id = r.id 
+                      AND LOWER(i.name) LIKE ANY(ARRAY[${ingredientsList.map((_, i) => `LOWER($${index + i})`).join(', ')}])
+                  )
+              `;
+              values.push(...ingredientsList);
+              index += ingredientsList.length;
+          }
       }
-  
+
       // Full-text search - case insensitive
       if (query) {
-        // Split the query into words for better partial matching
-        const searchTerms = query.split(' ')
-          .map(term => term.trim())
-          .filter(term => term.length > 0);
-        
-        if (searchTerms.length > 0) {
-          const searchConditions = searchTerms.map((_, i) => `
-            LOWER(r.title) LIKE LOWER($${index + i})
-            OR LOWER(r.description) LIKE LOWER($${index + i})
-          `).join(' AND ');
-  
-          baseQuery += ` AND (${searchConditions})`;
+          const searchTerms = query.split(' ')
+              .map(term => term.trim())
+              .filter(term => term.length > 0);
           
-          // Add wildcards to each search term for partial matching
-          const searchValues = searchTerms.map(term => `%${term}%`);
-          values.push(...searchValues);
-          index += searchTerms.length;
-        }
+          if (searchTerms.length > 0) {
+              const searchConditions = searchTerms.map((_, i) => `
+                  LOWER(r.title) LIKE LOWER($${index + i})
+                  OR LOWER(r.description) LIKE LOWER($${index + i})
+              `).join(' AND ');
+
+              baseQuery += ` AND (${searchConditions})`;
+              
+              const searchValues = searchTerms.map(term => `%${term}%`);
+              values.push(...searchValues);
+              index += searchTerms.length;
+          }
       }
-  
-      // Add ORDER BY clause for consistent results
-      baseQuery += ` ORDER BY r.id`;
-  
-      console.log('Final SQL Query:', baseQuery);
+
+      // Add pagination
+      const countQuery = `SELECT COUNT(*) FROM (${baseQuery}) AS total`;
+      const paginatedQuery = `${baseQuery} ORDER BY r.id LIMIT $${index++} OFFSET $${index++}`;
+      values.push(limit, offset);
+
+      console.log('Final SQL Query:', paginatedQuery);
       console.log('Query values:', values);
-  
-      const result = await pool.query(baseQuery, values);
-      res.status(200).json(result.rows);
-    } catch (error) {
+
+      // Execute both queries
+      const countResult = await pool.query(countQuery, values.slice(0, -2));
+      const result = await pool.query(paginatedQuery, values);
+
+      res.status(200).json({
+          recipes: result.rows,
+          total: parseInt(countResult.rows[0].count),
+          page: parseInt(page),
+          limit: parseInt(limit)
+      });
+  } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Something went wrong' });
-    }
-  };
+  }
+};

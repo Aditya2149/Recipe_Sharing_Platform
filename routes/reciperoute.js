@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/', recipeController.getAllRecipes);
 router.get('/search', recipeController.advancedSearchRecipes);
 router.get("/top-rated", recipeController.getTopRatedRecipes);
+router.get('/count', recipeController.getRecipesCount); // Add this new route
 router.get('/:id', recipeController.getRecipeById);
 
 // Routes for Chefs (authenticated users with 'chef' role)

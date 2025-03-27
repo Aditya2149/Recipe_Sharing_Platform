@@ -43,7 +43,7 @@ exports.createRecipe = async (req, res) => {
 
 // Update getAllRecipes to support pagination
 exports.getAllRecipes = async (req, res) => {
-  const { page = 1, limit = 6 } = req.query;
+  const { page = 1, limit = 10 } = req.query;
   const offset = (page - 1) * limit;
 
   try {
@@ -190,7 +190,7 @@ exports.getRecipesCount = async (req, res) => {
 
 // Update advancedSearchRecipes to support pagination
 exports.advancedSearchRecipes = async (req, res) => {
-  const { query, category_id, difficulty, max_time, ingredients, page = 1, limit = 6 } = req.query;
+  const { query, category_id, difficulty, max_time, ingredients, page = 1, limit = 10 } = req.query;
   const offset = (page - 1) * limit;
   
   try {
